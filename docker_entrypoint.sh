@@ -1,3 +1,3 @@
 #!/bin/sh
 
-exec tini theta-edgenode
+exec tini theta-node

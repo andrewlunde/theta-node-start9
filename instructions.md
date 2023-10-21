@@ -1,4 +1,4 @@
-# Instructions for Theta EdgeNode
+# Instructions for Theta Node
 
 Instructions go here. These appear to the user in the UI on the Service page under **Instructions**.
 

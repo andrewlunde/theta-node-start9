@@ -352,7 +352,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "theta-edgenode"
+name = "theta-node"
 version = "1.0.0"
 dependencies = [
  "hyper",

@@ -1,7 +1,7 @@
 PKG_ID := $(shell yq e ".id" manifest.yaml)
 PKG_VERSION := $(shell yq e ".version" manifest.yaml)
 TS_FILES := $(shell find ./ -name \*.ts)
-THETA_EDGENODE_SRC := $(shell find ./theta-edgenode/src) theta-edgenode/Cargo.toml theta-edgenode/Cargo.lock
+THETA_NODE_SRC := $(shell find ./theta-node/src) theta-node/Cargo.toml theta-node/Cargo.lock
 
 # delete the target of a rule if it has changed and its recipe exits with a nonzero exit status
 .DELETE_ON_ERROR:
@@ -33,7 +33,7 @@ clean-manifest:
 rebranding:
 	@read -p "Enter new package ID name (must be a single word): " NEW_PKG_ID; \
 	read -p "Enter new package title: " NEW_PKG_TITLE; \
-	find . \( -name "*.md" -o -name ".gitignore" -o -name "manifest.yaml" -o -name "*Service.yml" \) -type f -not -path "./theta-edgenode/*" -exec sed -i '' -e "s/theta-edgenode/$$NEW_PKG_ID/g; s/Theta EdgeNode/$$NEW_PKG_TITLE/g" {} +; \
+	find . \( -name "*.md" -o -name ".gitignore" -o -name "manifest.yaml" -o -name "*Service.yml" \) -type f -not -path "./theta-node/*" -exec sed -i '' -e "s/theta-node/$$NEW_PKG_ID/g; s/Theta Node/$$NEW_PKG_TITLE/g" {} +; \
 	echo; echo "Rebranding complete."; echo "	New package ID name is:	$$NEW_PKG_ID"; \
 	echo "	New package title is:	$$NEW_PKG_TITLE"; \
 	sed -i '' -e '/^# BEGIN REBRANDING/,/^# END REBRANDING/ s/^#*/#/' Makefile
@@ -51,14 +51,14 @@ x86:
 	@rm -f docker-images/aarch64.tar
 	ARCH=x86_64 $(MAKE)
 
-docker-images/aarch64.tar: Dockerfile docker_entrypoint.sh theta-edgenode/target/aarch64-unknown-linux-musl/release/theta-edgenode
+docker-images/aarch64.tar: Dockerfile docker_entrypoint.sh theta-node/target/aarch64-unknown-linux-musl/release/theta-node
 ifeq ($(ARCH),x86_64)
 else
 	mkdir -p docker-images
 	docker buildx build --tag start9/$(PKG_ID)/main:$(PKG_VERSION) --build-arg ARCH=aarch64 --platform=linux/arm64 -o type=docker,dest=docker-images/aarch64.tar .
 endif
 
-docker-images/x86_64.tar: Dockerfile docker_entrypoint.sh theta-edgenode/target/x86_64-unknown-linux-musl/release/theta-edgenode
+docker-images/x86_64.tar: Dockerfile docker_entrypoint.sh theta-node/target/x86_64-unknown-linux-musl/release/theta-node
 ifeq ($(ARCH),aarch64)
 else
 	mkdir -p docker-images
@@ -75,8 +75,8 @@ else
 endif
 	@start-sdk pack
 
-theta-edgenode/target/aarch64-unknown-linux-musl/release/theta-edgenode: $(THETA_EDGENODE_SRC)
-	docker run --rm -it -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/theta-edgenode:/home/rust/src messense/rust-musl-cross:aarch64-musl cargo build --release
+theta-node/target/aarch64-unknown-linux-musl/release/theta-node: $(THETA_NODE_SRC)
+	docker run --rm -it -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/theta-node:/home/rust/src messense/rust-musl-cross:aarch64-musl cargo build --release
 
-theta-edgenode/target/x86_64-unknown-linux-musl/release/theta-edgenode: $(THETA_EDGENODE_SRC)
-	docker run --rm -it -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/theta-edgenode:/home/rust/src messense/rust-musl-cross:x86_64-musl cargo build --release
+theta-node/target/x86_64-unknown-linux-musl/release/theta-node: $(THETA_NODE_SRC)
+	docker run --rm -it -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/theta-node:/home/rust/src messense/rust-musl-cross:x86_64-musl cargo build --release
